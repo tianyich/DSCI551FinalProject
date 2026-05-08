@@ -15,6 +15,8 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+Download the DuckDB database file from [this link](https://drive.google.com/file/d/15uZnGvRmYrgOsn1JZU2BoKv-zi2EyVab/view?usp=drive_link) and place it in the `datasets` directory:
+
 
 ## Run
 
@@ -32,7 +34,6 @@ http://127.0.0.1:8000
 
 ## Data
 
-The app uses the DuckDB database at `datasets/wildfires.duckdb`.
 Original data source: https://www.kaggle.com/datasets/rtatman/188-million-us-wildfires?resource=download
 
 Original data source is of format sqlite, but we converted it to duckdb for the purpose of this project. 
