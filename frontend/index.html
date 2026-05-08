@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DuckDB Query Benchmark</title>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+    </head>
+    <body>
+        <div class="page">
+            <div class="header">
+                <h1>DuckDB Query Benchmark</h1>
+              <p>Configure two queries with guided controls and compare their
+                execution time across dataset sizes.</p>
+            </div>
+
+            <div class="layout">
+                <aside class="panel">
+                    <h2 class="section-title">Benchmark Controls</h2>
+
+                <div class="builder-grid">
+                  <section class="builder-card">
+                    <h3>Query A</h3>
+
+                    <div class="field">
+                      <label class="toggle-row" for="selectAllA">
+                        <input id="selectAllA" type="checkbox" />
+                        <span>Select all columns</span>
+                      </label>
+                    </div>
+
+                    <div class="field">
+                      <label>Columns</label>
+                      <div id="selectedColumnsA" class="checkbox-grid"></div>
+                    </div>
+
+                    <div class="field">
+                      <label class="toggle-row" for="stateFilterEnabledA">
+                        <input id="stateFilterEnabledA" type="checkbox" />
+                        <span>Filter by state</span>
+                      </label>
+                      <select id="stateFilterValueA"></select>
+                    </div>
+
+                    <div class="field">
+                      <label class="toggle-row" for="yearFilterEnabledA">
+                        <input id="yearFilterEnabledA" type="checkbox" />
+                        <span>Filter by year</span>
+                      </label>
+                      <select id="yearFilterValueA"></select>
+                    </div>
+
+                    <div class="field">
+                      <label for="aggregationA">Aggregation</label>
+                      <select id="aggregationA"></select>
+                    </div>
+
+                    <div class="field">
+                      <label>Group By</label>
+                      <div id="groupByA" class="checkbox-grid"></div>
+                    </div>
+
+                    <button id="previewBtnA" class="secondary-btn builder-btn">Preview Query A</button>
+
+                  </section>
+
+                  <section class="builder-card">
+                    <h3>Query B</h3>
+
+                    <div class="field">
+                      <label class="toggle-row" for="selectAllB">
+                        <input id="selectAllB" type="checkbox" />
+                        <span>Select all columns</span>
+                      </label>
+                    </div>
+
+                    <div class="field">
+                      <label>Columns</label>
+                      <div id="selectedColumnsB" class="checkbox-grid"></div>
+                    </div>
+
+                    <div class="field">
+                      <label class="toggle-row" for="stateFilterEnabledB">
+                        <input id="stateFilterEnabledB" type="checkbox" />
+                        <span>Filter by state</span>
+                      </label>
+                      <select id="stateFilterValueB"></select>
+                    </div>
+
+                    <div class="field">
+                      <label class="toggle-row" for="yearFilterEnabledB">
+                        <input id="yearFilterEnabledB" type="checkbox" />
+                        <span>Filter by year</span>
+                      </label>
+                      <select id="yearFilterValueB"></select>
+                    </div>
+
+                    <div class="field">
+                      <label for="aggregationB">Aggregation</label>
+                      <select id="aggregationB"></select>
+                    </div>
+
+                    <div class="field">
+                      <label>Group By</label>
+                      <div id="groupByB" class="checkbox-grid"></div>
+                    </div>
+
+                    <button id="previewBtnB" class="secondary-btn builder-btn">Preview Query B</button>
+
+                  </section>
+                </div>
+
+                <section class="benchmark-card">
+                  <h3>Benchmark Options</h3>
+
+                  <div class="field">
+                    <label for="sizesInput">Sizes</label>
+                    <input id="sizesInput" type="text"
+                      value="1000, 5000, 10000, 50000, 100000" />
+                    <small>Enter row counts separated by commas.</small>
+                  </div>
+
+                  <div class="field">
+                    <label for="runsInput">Runs</label>
+                    <input id="runsInput" type="number" min="1" value="5" />
+                  </div>
+
+                  <div class="field">
+                    <label for="warmupInput">Warmup</label>
+                    <input id="warmupInput" type="number" min="0"
+                      value="1" />
+                  </div>
+
+                  <div class="actions">
+                    <button id="runBtn" class="primary-btn">Run
+                      Benchmark</button>
+                    <button id="resetBtn"
+                      class="secondary-btn">Reset</button>
+                  </div>
+                </section>
+                </aside>
+
+                <main class="content">
+                    <section class="card">
+                        <h2>Status</h2>
+                      <div id="status" class="status">Loading query builder options...</div>
+                    </section>
+
+                    <section class="card">
+                        <h2>Summary</h2>
+                        <div id="summary" class="summary-grid">
+                            <div class="summary-box"><div
+                                  class="label">Query A Fastest Avg</div><div
+                                    class="value">-</div></div>
+                            <div class="summary-box"><div
+                            class="label">Query B Fastest Avg</div><div
+                                    class="value">-</div></div>
+                            <div class="summary-box"><div class="label">Tested Sizes</div><div
+                              class="value">-</div></div>
+                            <div class="summary-box"><div class="label">Runs / Size</div><div
+                              class="value">-</div></div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                      <h2>Query Result Preview</h2>
+                      <div class="preview-grid">
+                        <div>
+                          <h3 id="previewTitleA">Query A</h3>
+                          <div class="preview-controls">
+                            <button id="previewPrevA" class="secondary-btn">Previous</button>
+                            <span id="previewPageA" class="preview-page">Page 1 of 1</span>
+                            <button id="previewNextA" class="secondary-btn">Next</button>
+                          </div>
+                          <div id="queryPreviewA" class="preview-box">No query results yet.</div>
+                        </div>
+                        <div>
+                          <h3 id="previewTitleB">Query B</h3>
+                          <div class="preview-controls">
+                            <button id="previewPrevB" class="secondary-btn">Previous</button>
+                            <span id="previewPageB" class="preview-page">Page 1 of 1</span>
+                            <button id="previewNextB" class="secondary-btn">Next</button>
+                          </div>
+                          <div id="queryPreviewB" class="preview-box">No query results yet.</div>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section class="card">
+                      <h2>Execution Time by Size</h2>
+                      <div class="chart-wrap">
+                        <svg id="lineChart" viewBox="0 0 900 420"></svg>
+                      </div>
+                      <div class="empty" id="lineEmpty">Run a benchmark to
+                        show the line chart.</div>
+                    </section>
+
+                    <section class="card">
+                      <h2>Average Time Comparison</h2>
+                      <div class="chart-wrap">
+                        <svg id="barChart" viewBox="0 0 900 420"></svg>
+                      </div>
+                      <div class="empty" id="barEmpty">Run a benchmark to show
+                        the bar chart.</div>
+                    </section>
+
+                    <section class="card">
+                      <h2>Detailed Results</h2>
+                      <div class="table-wrap">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Size</th>
+                              <th>Query A Avg (s)</th>
+                              <th>Query B Avg (s)</th>
+                              <th>Difference (s)</th>
+                            </tr>
+                          </thead>
+                          <tbody id="resultsTableBody">
+                            <tr>
+                              <td colspan="5" class="empty">No
+                                benchmark results yet.</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+
+        <div id="tooltip" class="tooltip"></div>
+
+        <script>
+    const state = {
+      queryOptions: null,
+      benchmarkResultA: null,
+      benchmarkResultB: null,
+      previewA: null,
+      previewB: null,
+      previewPageSize: 10,
+    };
+
+    const els = {
+      selectAllA: document.getElementById("selectAllA"),
+      selectAllB: document.getElementById("selectAllB"),
+      selectedColumnsA: document.getElementById("selectedColumnsA"),
+      selectedColumnsB: document.getElementById("selectedColumnsB"),
+      stateFilterEnabledA: document.getElementById("stateFilterEnabledA"),
+      stateFilterEnabledB: document.getElementById("stateFilterEnabledB"),
+      stateFilterValueA: document.getElementById("stateFilterValueA"),
+      stateFilterValueB: document.getElementById("stateFilterValueB"),
+      yearFilterEnabledA: document.getElementById("yearFilterEnabledA"),
+      yearFilterEnabledB: document.getElementById("yearFilterEnabledB"),
+      yearFilterValueA: document.getElementById("yearFilterValueA"),
+      yearFilterValueB: document.getElementById("yearFilterValueB"),
+      aggregationA: document.getElementById("aggregationA"),
+      aggregationB: document.getElementById("aggregationB"),
+      groupByA: document.getElementById("groupByA"),
+      groupByB: document.getElementById("groupByB"),
+      previewBtnA: document.getElementById("previewBtnA"),
+      previewBtnB: document.getElementById("previewBtnB"),
+      sizesInput: document.getElementById("sizesInput"),
+      runsInput: document.getElementById("runsInput"),
+      warmupInput: document.getElementById("warmupInput"),
+      runBtn: document.getElementById("runBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      status: document.getElementById("status"),
+      summary: document.getElementById("summary"),
+      lineChart: document.getElementById("lineChart"),
+      barChart: document.getElementById("barChart"),
+      lineEmpty: document.getElementById("lineEmpty"),
+      barEmpty: document.getElementById("barEmpty"),
+      resultsTableBody: document.getElementById("resultsTableBody"),
+      previewTitleA: document.getElementById("previewTitleA"),
+      previewTitleB: document.getElementById("previewTitleB"),
+      previewPrevA: document.getElementById("previewPrevA"),
+      previewPrevB: document.getElementById("previewPrevB"),
+      previewNextA: document.getElementById("previewNextA"),
+      previewNextB: document.getElementById("previewNextB"),
+      previewPageA: document.getElementById("previewPageA"),
+      previewPageB: document.getElementById("previewPageB"),
+      queryPreviewA: document.getElementById("queryPreviewA"),
+      queryPreviewB: document.getElementById("queryPreviewB"),
+      tooltip: document.getElementById("tooltip"),
+    };
+
+    function setStatus(message, type = "") {
+      els.status.textContent = message;
+      els.status.className = `status ${type}`.trim();
+    }
+
+    function formatSeconds(value) {
+      return Number(value).toFixed(6);
+    }
+
+    function parseSizes(input) {
+      return input
+        .split(",")
+        .map(item => Number(item.trim()))
+        .filter(num => Number.isFinite(num) && num > 0);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    async function fetchQueryOptions() {
+      const response = await fetch("/benchmark/options");
+      if (!response.ok) {
+        throw new Error(`Failed to load query options: ${response.status}`);
+      }
+      return response.json();
+    }
+
+    async function runBenchmark(payload) {
+      const response = await fetch("/benchmark/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let detail = `Request failed: ${response.status}`;
+        try {
+          const data = await response.json();
+          if (data?.detail) {
+            detail = Array.isArray(data.detail) ? JSON.stringify(data.detail) : data.detail;
+          }
+        } catch (_) {}
+        throw new Error(detail);
+      }
+
+      return response.json();
+    }
+
+    async function fetchPreview(payload) {
+      const response = await fetch("/benchmark/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let detail = `Request failed: ${response.status}`;
+        try {
+          const data = await response.json();
+          if (data?.detail) {
+            detail = Array.isArray(data.detail) ? JSON.stringify(data.detail) : data.detail;
+          }
+        } catch (_) {}
+        throw new Error(detail);
+      }
+
+      return response.json();
+    }
+
+    function renderCheckboxGroup(container, options, prefix) {
+      container.innerHTML = options.map(option => `
+        <label class="check-item">
+          <input type="checkbox" data-prefix="${prefix}" value="${escapeHtml(option.value)}" />
+          <span>${escapeHtml(option.label)}</span>
+        </label>
+      `).join("");
+    }
+
+    function populateSelect(select, options) {
+      select.innerHTML = options.map(option => {
+        if (typeof option === "string" || typeof option === "number") {
+          return `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`;
+        }
+        return `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`;
+      }).join("");
+    }
+
+    function setCheckedValues(container, values) {
+      const selected = new Set(values);
+      container.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.checked = selected.has(input.value);
+      });
+    }
+
+    function getCheckedValues(container) {
+      return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value);
+    }
+
+    function getDefaultConfig(queryKey) {
+      const firstState = state.queryOptions.state_options[0] || "CA";
+      const defaultYear = state.queryOptions.year_options.includes(2015)
+        ? 2015
+        : state.queryOptions.year_options[0];
+
+      if (queryKey === "A") {
+        return {
+          select_all: false,
+          selected_columns: ["FIRE_YEAR", "STATE"],
+          state_filter_enabled: true,
+          state_filter_value: firstState,
+          year_filter_enabled: false,
+          year_filter_value: defaultYear,
+          aggregation: "none",
+          group_by: [],
+        };
+      }
+
+      return {
+        select_all: false,
+        selected_columns: ["STATE"],
+        state_filter_enabled: false,
+        state_filter_value: firstState,
+        year_filter_enabled: true,
+        year_filter_value: defaultYear,
+        aggregation: "count",
+        group_by: ["STATE"],
+      };
+    }
+
+    function applyQueryConfig(queryKey, config) {
+      const suffix = queryKey;
+      els[`selectAll${suffix}`].checked = config.select_all;
+      els[`stateFilterEnabled${suffix}`].checked = config.state_filter_enabled;
+      els[`stateFilterValue${suffix}`].value = String(config.state_filter_value);
+      els[`yearFilterEnabled${suffix}`].checked = config.year_filter_enabled;
+      els[`yearFilterValue${suffix}`].value = String(config.year_filter_value);
+      els[`aggregation${suffix}`].value = config.aggregation;
+      setCheckedValues(els[`selectedColumns${suffix}`], config.selected_columns);
+      setCheckedValues(els[`groupBy${suffix}`], config.group_by);
+      updateBuilderAvailability(queryKey);
+    }
+
+    function collectQueryConfig(queryKey) {
+      const suffix = queryKey;
+      return {
+        select_all: els[`selectAll${suffix}`].checked,
+        selected_columns: getCheckedValues(els[`selectedColumns${suffix}`]),
+        state_filter_enabled: els[`stateFilterEnabled${suffix}`].checked,
+        state_filter_value: els[`stateFilterValue${suffix}`].value,
+        year_filter_enabled: els[`yearFilterEnabled${suffix}`].checked,
+        year_filter_value: Number(els[`yearFilterValue${suffix}`].value),
+        aggregation: els[`aggregation${suffix}`].value,
+        group_by: getCheckedValues(els[`groupBy${suffix}`]),
+      };
+    }
+
+    function invalidateResults() {
+      state.benchmarkResultA = null;
+      state.benchmarkResultB = null;
+      state.previewA = null;
+      state.previewB = null;
+      renderAll();
+    }
+
+    function updateBuilderAvailability(queryKey) {
+      const suffix = queryKey;
+      const hasAggregation = els[`aggregation${suffix}`].value !== "none";
+      const selectAllChecked = els[`selectAll${suffix}`].checked;
+
+      els[`selectedColumns${suffix}`].querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.disabled = hasAggregation || selectAllChecked;
+      });
+      els[`selectAll${suffix}`].disabled = hasAggregation;
+      els[`groupBy${suffix}`].querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.disabled = !hasAggregation;
+      });
+      els[`stateFilterValue${suffix}`].disabled = !els[`stateFilterEnabled${suffix}`].checked;
+      els[`yearFilterValue${suffix}`].disabled = !els[`yearFilterEnabled${suffix}`].checked;
+    }
+
+    function updateSummary(resultA, resultB) {
+      if (!resultA?.results?.length || !resultB?.results?.length) {
+        els.summary.innerHTML = `
+          <div class="summary-box"><div class="label">Query A Fastest Avg</div><div class="value">-</div></div>
+          <div class="summary-box"><div class="label">Query B Fastest Avg</div><div class="value">-</div></div>
+          <div class="summary-box"><div class="label">Tested Sizes</div><div class="value">-</div></div>
+          <div class="summary-box"><div class="label">Runs / Size</div><div class="value">-</div></div>
+        `;
+        return;
+      }
+
+      const fastestA = Math.min(...resultA.results.map(item => item.avg_time));
+      const fastestB = Math.min(...resultB.results.map(item => item.avg_time));
+
+      els.summary.innerHTML = `
+        <div class="summary-box"><div class="label">Query A Fastest Avg</div><div class="value">${formatSeconds(fastestA)}s</div></div>
+        <div class="summary-box"><div class="label">Query B Fastest Avg</div><div class="value">${formatSeconds(fastestB)}s</div></div>
+        <div class="summary-box"><div class="label">Tested Sizes</div><div class="value">${resultA.sizes.length}</div></div>
+        <div class="summary-box"><div class="label">Runs Per Size</div><div class="value">${resultA.runs}</div></div>
+      `;
+    }
+
+    function updateTable(resultA, resultB) {
+      const rowsA = resultA?.results || [];
+      const rowsB = resultB?.results || [];
+
+      if (!rowsA.length || !rowsB.length) {
+        els.resultsTableBody.innerHTML = '<tr><td colspan="4" class="empty">No benchmark results yet.</td></tr>';
+        return;
+      }
+
+      els.resultsTableBody.innerHTML = rowsA.map((rowA, index) => {
+        const rowB = rowsB[index];
+        const diff = rowA.avg_time - rowB.avg_time;
+        return `
+          <tr>
+            <td>${rowA.size.toLocaleString()}</td>
+            <td>${formatSeconds(rowA.avg_time)}</td>
+            <td>${formatSeconds(rowB.avg_time)}</td>
+            <td>${formatSeconds(diff)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updatePreviewControls(queryKey, preview) {
+      const suffix = queryKey;
+      if (!preview) {
+        els[`previewPage${suffix}`].textContent = "Page 1 of 1";
+        els[`previewPrev${suffix}`].disabled = true;
+        els[`previewNext${suffix}`].disabled = true;
+        return;
+      }
+
+      els[`previewPage${suffix}`].textContent = `Page ${preview.page} of ${preview.total_pages}`;
+      els[`previewPrev${suffix}`].disabled = preview.page <= 1;
+      els[`previewNext${suffix}`].disabled = preview.page >= preview.total_pages;
+    }
+
+    function renderPreview(queryKey, preview, container) {
+      if (!preview?.columns?.length) {
+        container.innerHTML = '<div class="empty-preview">No query results yet.</div>';
+        updatePreviewControls(queryKey, null);
+        return;
+      }
+
+      const header = preview.columns.map(column => `<th>${escapeHtml(column)}</th>`).join("");
+      const rows = preview.rows.map(row => `
+        <tr>${row.map(value => `<td>${escapeHtml(value ?? "")}</td>`).join("")}</tr>
+      `).join("");
+      const emptyRow = `<tr><td colspan="${preview.columns.length}" class="empty-preview">No rows returned.</td></tr>`;
+      const summary = `Showing page ${preview.page} with ${preview.rows.length} rows out of ${preview.row_count}.`;
+
+      container.innerHTML = `
+        <div class="preview-meta">${escapeHtml(summary)}</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>${header}</tr></thead>
+            <tbody>${rows || emptyRow}</tbody>
+          </table>
+        </div>
+      `;
+
+      updatePreviewControls(queryKey, preview);
+    }
+
+    function updatePreviewTables() {
+      els.previewTitleA.textContent = "Query A";
+      els.previewTitleB.textContent = "Query B";
+      renderPreview("A", state.previewA, els.queryPreviewA);
+      renderPreview("B", state.previewB, els.queryPreviewB);
+    }
+
+    function showTooltip(event, html) {
+      els.tooltip.innerHTML = html;
+      els.tooltip.style.opacity = 1;
+      els.tooltip.style.left = `${event.pageX + 12}px`;
+      els.tooltip.style.top = `${event.pageY - 12}px`;
+    }
+
+    function hideTooltip() {
+      els.tooltip.style.opacity = 0;
+    }
+
+    function drawLineChart(resultA, resultB) {
+      const dataA = [...(resultA?.results || [])].sort((a, b) => a.size - b.size);
+      const dataB = [...(resultB?.results || [])].sort((a, b) => a.size - b.size);
+      const svg = d3.select(els.lineChart);
+      svg.selectAll("*").remove();
+
+      if (!dataA.length || !dataB.length) {
+        els.lineEmpty.style.display = "block";
+        return;
+      }
+
+      els.lineEmpty.style.display = "none";
+
+      const width = 900;
+      const height = 420;
+      const margin = { top: 24, right: 140, bottom: 56, left: 72 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+      const allData = [...dataA, ...dataB];
+
+      const x = d3.scaleLinear()
+        .domain(d3.extent(allData, item => item.size))
+        .range([0, innerWidth]);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(allData, item => item.avg_time) * 1.1 || 1])
+        .nice()
+        .range([innerHeight, 0]);
+
+      g.append("g")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(x).tickFormat(d3.format(",")));
+
+      g.append("g").call(d3.axisLeft(y));
+
+      g.append("text")
+        .attr("x", innerWidth / 2)
+        .attr("y", innerHeight + 44)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#f2f2f2")
+        .text("Dataset Size");
+
+      g.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -innerHeight / 2)
+        .attr("y", -50)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#f2f2f2")
+        .text("Average Execution Time (s)");
+
+      const line = d3.line().x(item => x(item.size)).y(item => y(item.avg_time));
+
+      g.append("path").datum(dataA).attr("fill", "none").attr("stroke", "#f2fd50").attr("stroke-width", 2.5).attr("d", line);
+      g.append("path").datum(dataB).attr("fill", "none").attr("stroke", "#daa520").attr("stroke-width", 2.5).attr("d", line);
+
+      g.selectAll(".point-a")
+        .data(dataA)
+        .enter()
+        .append("circle")
+        .attr("cx", item => x(item.size))
+        .attr("cy", item => y(item.avg_time))
+        .attr("r", 5)
+        .attr("fill", "#f2fd50")
+        .on("mousemove", (event, item) => showTooltip(event, `Query A<br>Size: ${item.size.toLocaleString()}<br>Avg: ${formatSeconds(item.avg_time)} s`))
+        .on("mouseleave", hideTooltip);
+
+      g.selectAll(".point-b")
+        .data(dataB)
+        .enter()
+        .append("circle")
+        .attr("cx", item => x(item.size))
+        .attr("cy", item => y(item.avg_time))
+        .attr("r", 5)
+        .attr("fill", "#daa520")
+        .on("mousemove", (event, item) => showTooltip(event, `Query B<br>Size: ${item.size.toLocaleString()}<br>Avg: ${formatSeconds(item.avg_time)} s`))
+        .on("mouseleave", hideTooltip);
+
+      const legend = svg.append("g").attr("transform", `translate(${width - 130}, 50)`);
+      legend.append("circle").attr("cx", 0).attr("cy", 0).attr("r", 5).attr("fill", "#f2fd50");
+      legend.append("text").attr("x", 12).attr("y", 4).attr("fill", "#f2f2f2").text("Query A").attr("font-size", 12);
+      legend.append("circle").attr("cx", 0).attr("cy", 24).attr("r", 5).attr("fill", "#daa520");
+      legend.append("text").attr("x", 12).attr("y", 28).attr("fill", "#f2f2f2").text("Query B").attr("font-size", 12);
+    }
+
+    function drawBoxPlot(resultA, resultB) {
+      const dataA = resultA?.results || [];
+      const dataB = resultB?.results || [];
+      const svg = d3.select(els.barChart);
+      svg.selectAll("*").remove();
+
+      if (!dataA.length || !dataB.length) {
+        els.barEmpty.style.display = "block";
+        return;
+      }
+
+      els.barEmpty.style.display = "none";
+
+      const width = 900;
+      const height = 420;
+      const margin = { top: 24, right: 24, bottom: 56, left: 72 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+      const combined = [];
+
+      dataA.forEach(item => combined.push({ size: item.size, times: item.all_times, scenario: "A" }));
+      dataB.forEach(item => combined.push({ size: item.size, times: item.all_times, scenario: "B" }));
+
+      const sizes = [...new Set(combined.map(item => item.size))];
+      const x0 = d3.scaleBand().domain(sizes).range([0, innerWidth]).padding(0.2);
+      const x1 = d3.scaleBand().domain(["A", "B"]).range([0, x0.bandwidth()]).padding(0.3);
+      const allTimes = combined.flatMap(item => item.times);
+      const y = d3.scaleLinear().domain([0, d3.max(allTimes) * 1.1]).nice().range([innerHeight, 0]);
+
+      g.append("g").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x0).tickFormat(d3.format(",")));
+      g.append("g").call(d3.axisLeft(y));
+
+      const color = { A: "#f2fd50", B: "#daa520" };
+
+      combined.forEach(item => {
+        const sorted = [...item.times].sort(d3.ascending);
+        const q1 = d3.quantile(sorted, 0.25);
+        const median = d3.quantile(sorted, 0.5);
+        const q3 = d3.quantile(sorted, 0.75);
+        const min = sorted[0];
+        const max = sorted[sorted.length - 1];
+        const x = x0(item.size) + x1(item.scenario);
+
+        g.append("rect").attr("x", x).attr("y", y(q3)).attr("width", x1.bandwidth()).attr("height", y(q1) - y(q3)).attr("fill", color[item.scenario]);
+        g.append("line").attr("x1", x).attr("x2", x + x1.bandwidth()).attr("y1", y(median)).attr("y2", y(median)).attr("stroke", "white").attr("stroke-width", 2);
+        g.append("line").attr("x1", x + x1.bandwidth() / 2).attr("x2", x + x1.bandwidth() / 2).attr("y1", y(min)).attr("y2", y(max)).attr("stroke", "white");
+        g.append("line").attr("x1", x + 2).attr("x2", x + x1.bandwidth() - 2).attr("y1", y(min)).attr("y2", y(min)).attr("stroke", "white");
+        g.append("line").attr("x1", x + 2).attr("x2", x + x1.bandwidth() - 2).attr("y1", y(max)).attr("y2", y(max)).attr("stroke", "white");
+      });
+
+      const legend = svg.append("g").attr("transform", `translate(${width - 120}, 40)`);
+      legend.append("rect").attr("width", 12).attr("height", 12).attr("fill", color.A);
+      legend.append("text").attr("x", 18).attr("y", 10).attr("fill", "#f2f2f2").text("Query A").attr("font-size", 12);
+      legend.append("rect").attr("y", 20).attr("width", 12).attr("height", 12).attr("fill", color.B);
+      legend.append("text").attr("x", 18).attr("y", 30).attr("fill", "#f2f2f2").text("Query B").attr("font-size", 12);
+    }
+
+    function renderAll() {
+      updateSummary(state.benchmarkResultA, state.benchmarkResultB);
+      updateTable(state.benchmarkResultA, state.benchmarkResultB);
+      updatePreviewTables();
+      drawLineChart(state.benchmarkResultA, state.benchmarkResultB);
+      drawBoxPlot(state.benchmarkResultA, state.benchmarkResultB);
+    }
+
+    function resetView() {
+      if (!state.queryOptions) {
+        return;
+      }
+
+      applyQueryConfig("A", getDefaultConfig("A"));
+      applyQueryConfig("B", getDefaultConfig("B"));
+      els.sizesInput.value = "1000, 5000, 10000, 50000, 100000";
+      els.runsInput.value = 5;
+      els.warmupInput.value = 1;
+      invalidateResults();
+      setStatus("Reset complete.");
+    }
+
+    async function loadPreview(queryKey, page = 1, statusMessage = "Loading query preview...") {
+      const previewResponse = await fetchPreview({
+        query_config: collectQueryConfig(queryKey),
+        page,
+        page_size: state.previewPageSize,
+      });
+      state[`preview${queryKey}`] = previewResponse.preview;
+      renderAll();
+      if (statusMessage) {
+        setStatus(statusMessage, "success");
+      }
+    }
+
+    async function handleRunClick() {
+      const sizes = parseSizes(els.sizesInput.value);
+      const runs = Number(els.runsInput.value);
+      const warmup = Number(els.warmupInput.value);
+
+      if (!sizes.length) {
+        setStatus("Please enter at least one valid size.", "error");
+        return;
+      }
+
+      if (!Number.isInteger(runs) || runs < 1) {
+        setStatus("Runs must be a positive integer.", "error");
+        return;
+      }
+
+      if (!Number.isInteger(warmup) || warmup < 0) {
+        setStatus("Warmup must be a non-negative integer.", "error");
+        return;
+      }
+
+      els.runBtn.disabled = true;
+      setStatus("Running...");
+
+      try {
+        const [resultA, resultB, previewA, previewB] = await Promise.all([
+          runBenchmark({ query_config: collectQueryConfig("A"), sizes, runs, warmup }),
+          runBenchmark({ query_config: collectQueryConfig("B"), sizes, runs, warmup }),
+          fetchPreview({ query_config: collectQueryConfig("A"), page: 1, page_size: state.previewPageSize }),
+          fetchPreview({ query_config: collectQueryConfig("B"), page: 1, page_size: state.previewPageSize }),
+        ]);
+
+        state.benchmarkResultA = resultA;
+        state.benchmarkResultB = resultB;
+        state.previewA = previewA.preview;
+        state.previewB = previewB.preview;
+
+        setStatus("Completed", "success");
+        renderAll();
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Failed to run benchmark.", "error");
+      } finally {
+        els.runBtn.disabled = false;
+      }
+    }
+
+    function bindBuilderEvents(queryKey) {
+      const suffix = queryKey;
+      const invalidate = () => {
+        updateBuilderAvailability(queryKey);
+        invalidateResults();
+        setStatus("Query changed.");
+      };
+
+      els[`selectAll${suffix}`].addEventListener("change", invalidate);
+      els[`stateFilterEnabled${suffix}`].addEventListener("change", invalidate);
+      els[`stateFilterValue${suffix}`].addEventListener("change", invalidate);
+      els[`yearFilterEnabled${suffix}`].addEventListener("change", invalidate);
+      els[`yearFilterValue${suffix}`].addEventListener("change", invalidate);
+      els[`aggregation${suffix}`].addEventListener("change", invalidate);
+      els[`selectedColumns${suffix}`].addEventListener("change", invalidate);
+      els[`groupBy${suffix}`].addEventListener("change", invalidate);
+      els[`previewBtn${suffix}`].addEventListener("click", async () => {
+        try {
+          await loadPreview(queryKey, 1, `Query ${queryKey} preview loaded.`);
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || `Failed to preview query ${queryKey}.`, "error");
+        }
+      });
+      els[`previewPrev${suffix}`].addEventListener("click", async () => {
+        const preview = state[`preview${queryKey}`];
+        if (!preview || preview.page <= 1) {
+          return;
+        }
+        try {
+          await loadPreview(queryKey, preview.page - 1, `Query ${queryKey} preview updated.`);
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || `Failed to change preview page for query ${queryKey}.`, "error");
+        }
+      });
+      els[`previewNext${suffix}`].addEventListener("click", async () => {
+        const preview = state[`preview${queryKey}`];
+        if (!preview || preview.page >= preview.total_pages) {
+          return;
+        }
+        try {
+          await loadPreview(queryKey, preview.page + 1, `Query ${queryKey} preview updated.`);
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || `Failed to change preview page for query ${queryKey}.`, "error");
+        }
+      });
+    }
+
+    function initializeBuilders(options) {
+      state.queryOptions = options;
+      renderCheckboxGroup(els.selectedColumnsA, options.column_options, "selectedColumnsA");
+      renderCheckboxGroup(els.selectedColumnsB, options.column_options, "selectedColumnsB");
+      renderCheckboxGroup(els.groupByA, options.group_by_options, "groupByA");
+      renderCheckboxGroup(els.groupByB, options.group_by_options, "groupByB");
+      populateSelect(els.aggregationA, options.aggregation_options);
+      populateSelect(els.aggregationB, options.aggregation_options);
+      populateSelect(els.stateFilterValueA, options.state_options);
+      populateSelect(els.stateFilterValueB, options.state_options);
+      populateSelect(els.yearFilterValueA, options.year_options);
+      populateSelect(els.yearFilterValueB, options.year_options);
+      applyQueryConfig("A", getDefaultConfig("A"));
+      applyQueryConfig("B", getDefaultConfig("B"));
+    }
+
+    async function init() {
+      try {
+        const options = await fetchQueryOptions();
+        initializeBuilders(options);
+        bindBuilderEvents("A");
+        bindBuilderEvents("B");
+        updatePreviewTables();
+        setStatus("Query builder loaded. Choose fields and run the benchmark.");
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Failed to initialize frontend.", "error");
+      }
+    }
+
+    els.runBtn.addEventListener("click", handleRunClick);
+    els.resetBtn.addEventListener("click", resetView);
+
+    renderAll();
+    init();
+  </script>
+
+<style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0D0D0D;
+      color: #F2F2F2;
+    }
+
+    .page {
+      max-width: 2000px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #4b5563;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 600px 1fr;
+      gap: 20px;
+    }
+
+    .panel,
+    .card {
+      background: #181818;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      color: #f2f2f2;
+    }
+
+    .panel {
+      padding: 18px;
+      align-self: start;
+      position: sticky;
+      top: 20px;
+      background: #181818;
+      color: #f2f2f2;
+    }
+
+    .section-title {
+      margin: 0 0 14px 0;
+      font-size: 18px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #0d0d0d;
+      color: #f2f2f2;
+    }
+
+    .field small {
+      display: block;
+      margin-top: 6px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    .builder-card {
+      padding: 14px;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      background: #121212;
+      height: 100%;
+    }
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .benchmark-card {
+      padding: 14px;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      background: #121212;
+    }
+
+    .builder-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+    }
+
+    .benchmark-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-row input {
+      width: auto;
+      margin: 0;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid #303030;
+      border-radius: 10px;
+      background: #0d0d0d;
+      font-size: 13px;
+    }
+
+    .check-item input {
+      width: auto;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .builder-btn {
+      width: 100%;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary-btn {
+      background: #f2fd50;
+      color: #0d0d0d;
+    }
+
+    .secondary-btn {
+      background: #f2fd50;
+      color: #0d0d0d;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      padding: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #f2f2f2;
+    }
+
+    .status.error {
+      color: #f20808;
+    }
+
+    .status.success {
+      color: #1eef3d;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-box {
+      padding: 14px;
+      border-radius: 12px;
+      background: #181818;
+      border: 1px solid #f2f2f2;
+    }
+
+    .summary-box .label {
+      font-size: 12px;
+      color: #f2f2f2;
+      margin-bottom: 6px;
+    }
+
+    .summary-box .value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #181818;
+    }
+
+    th {
+      color: #f2f2f2;
+      background: #181818;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .preview-grid h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+    }
+
+    .preview-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .preview-page {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .preview-box {
+      border: 1px solid #f2f2f2;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 120px;
+    }
+
+    .preview-meta {
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .empty-preview {
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .empty {
+      color: #181818;
+      font-size: 14px;
+      padding: 12px 0;
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(17, 24, 39, 0.95);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .builder-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .checkbox-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+  </style>
+    </body>
+</html>
